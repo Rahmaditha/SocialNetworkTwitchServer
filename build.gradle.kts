@@ -43,13 +43,24 @@ dependencies {
 
     // Koin Core features
     implementation ("io.insert-koin:koin-core:$koin_version")
-    // Koin Test features
-    testImplementation ("io.insert-koin:koin-test:$koin_version")
-
     // Koin for Ktor
     implementation ("io.insert-koin:koin-ktor:$koin_version")
     // SLF4J Logger
     implementation ("io.insert-koin:koin-logger-slf4j:$koin_version")
 
     implementation("org.litote.kmongo:kmongo-coroutine:$kmongo_version")
+
+    //Test dependencies
+
+    //Gson
+    testImplementation("com.google.code.gson:gson:2.9.0")
+    //Truth
+    testImplementation("com.google.truth:truth:1.1.3")
+
+    // Koin Test features
+    testImplementation ("io.insert-koin:koin-test:$koin_version")
+
+    //Ktor Test
+    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 }
