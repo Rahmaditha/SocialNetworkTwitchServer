@@ -1,4 +1,4 @@
-package com.cookiss.data.util
+package com.cookiss.util
 
 object Constants {
 
