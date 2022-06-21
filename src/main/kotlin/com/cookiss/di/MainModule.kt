@@ -1,5 +1,7 @@
 package com.cookiss.di
 
+import com.cookiss.data.repository.follow.FollowRepository
+import com.cookiss.data.repository.follow.FollowRepositoryImpl
 import com.cookiss.data.repository.user.UserRepository
 import com.cookiss.data.repository.user.UserRepositoryImpl
 import com.cookiss.util.Constants
@@ -15,5 +17,9 @@ val mainModule = module {
 
     single<UserRepository> {
         UserRepositoryImpl(get())
+    }
+
+    single<FollowRepository> {
+        FollowRepositoryImpl(get())
     }
 }
