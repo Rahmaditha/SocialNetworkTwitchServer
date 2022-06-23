@@ -4,6 +4,7 @@ import com.cookiss.data.repository.follow.FollowRepository
 import com.cookiss.data.repository.follow.FollowRepositoryImpl
 import com.cookiss.data.repository.user.UserRepository
 import com.cookiss.data.repository.user.UserRepositoryImpl
+import com.cookiss.service.UserService
 import com.cookiss.util.Constants
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -21,5 +22,9 @@ val mainModule = module {
 
     single<FollowRepository> {
         FollowRepositoryImpl(get())
+    }
+
+    single {
+        UserService(get())
     }
 }

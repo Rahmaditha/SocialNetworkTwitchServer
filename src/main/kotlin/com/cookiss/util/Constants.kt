@@ -2,5 +2,7 @@ package com.cookiss.util
 
 object Constants {
 
-    val DATABASE_NAME = "social_network_twitch"
+    const val DATABASE_NAME = "social_network_twitch"
+
+    const val DEFAULT_POST_PAGE_SIZE = 15
 }

@@ -4,6 +4,7 @@ import com.cookiss.data.repository.user.UserRepository
 import com.cookiss.data.models.User
 import com.cookiss.data.requests.CreateAccountRequest
 import com.cookiss.data.responses.BasicApiResponse
+import com.cookiss.service.UserService
 import com.cookiss.util.ApiResponseMessages
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -11,15 +12,14 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.createUserRoute(userRepository: UserRepository){
+fun Route.createUserRoute(userService: UserService){
 
     post("/api/user/create"){
         val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val doesUserExist = userRepository.getUserByEmail(request.email) != null
-        if(doesUserExist){
+        if(userService.doesUserWithEmailExist(request.email)){
             call.respond(
                 BasicApiResponse(
                     message = ApiResponseMessages.USER_ALREADY_EXISTS,
@@ -27,31 +27,25 @@ fun Route.createUserRoute(userRepository: UserRepository){
             )
             return@post
         }
-        if(request.email.isBlank() || request.password.isBlank() || request.username.isBlank()){
-            call.respond(
-                BasicApiResponse(
-                    message = ApiResponseMessages.FIELDS_BLANK,
-                    successful = false)
-            )
-            return@post
+
+        when(userService.validateCreateAccountRequest(request)){
+            is UserService.ValidationEvent.ErrorFieldEmpty -> {
+                call.respond(
+                    BasicApiResponse(
+                        message = ApiResponseMessages.FIELDS_BLANK,
+                        successful = false)
+                )
+                return@post
+            }
+            is UserService.ValidationEvent.Success -> {
+                userService.createUser(request)
+                call.respond(
+                    BasicApiResponse(
+                        successful = false)
+                )
+                return@post
+            }
         }
-        userRepository.createUser(
-            User(
-                email = request.email,
-                username = request.username,
-                password = request.password,
-                profileImageUrl = "",
-                bio = "",
-                githubUrl = null,
-                instagramUrl = null,
-                linkedInUrl = null
-            )
-        )
-        call.respond(
-            BasicApiResponse(
-                successful = true
-            )
-        )
     }
 }
 
