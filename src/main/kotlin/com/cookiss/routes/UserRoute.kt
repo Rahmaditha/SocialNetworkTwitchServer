@@ -1,8 +1,12 @@
 package com.cookiss.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.cookiss.data.repository.user.UserRepository
 import com.cookiss.data.models.User
 import com.cookiss.data.requests.CreateAccountRequest
+import com.cookiss.data.requests.LoginRequest
+import com.cookiss.data.responses.AuthResponse
 import com.cookiss.data.responses.BasicApiResponse
 import com.cookiss.service.UserService
 import com.cookiss.util.ApiResponseMessages
@@ -11,6 +15,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.util.*
 
 fun Route.createUserRoute(userService: UserService){
 
@@ -49,9 +54,15 @@ fun Route.createUserRoute(userService: UserService){
     }
 }
 
-fun Route.loginUser(userRepository: UserRepository){
+fun Route.loginUser(
+    userService: UserService,
+    jwtIssuer: String,
+    jwtAudience: String,
+    jwtSecret: String
+
+){
     post("/api/user/login") {
-        val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
+        val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
@@ -61,15 +72,20 @@ fun Route.loginUser(userRepository: UserRepository){
             return@post
         }
 
-        val isCorrectPassword = userRepository.doesPasswordForUserMatch(
-            email = request.email,
-            enteredPassword = request.password
-        )
+        val isCorrectPassword = userService.doesPasswordForUserMatch(request)
         if(isCorrectPassword){
+            val expiresIn = 1000L * 60L * 60L * 24L * 365L
+            val token = JWT.create()
+                .withClaim("email", request.email)
+                .withIssuer(jwtIssuer)
+                .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                .withAudience(jwtAudience)
+                .sign(Algorithm.HMAC256(jwtSecret))
+
             call.respond(
                 HttpStatusCode.OK,
-                BasicApiResponse(
-                    successful = true
+                AuthResponse(
+                    token = token
                 )
             )
         }else{

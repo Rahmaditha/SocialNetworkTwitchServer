@@ -2,8 +2,12 @@ package com.cookiss.di
 
 import com.cookiss.data.repository.follow.FollowRepository
 import com.cookiss.data.repository.follow.FollowRepositoryImpl
+import com.cookiss.data.repository.post.PostRepository
+import com.cookiss.data.repository.post.PostRepositoryImpl
 import com.cookiss.data.repository.user.UserRepository
 import com.cookiss.data.repository.user.UserRepositoryImpl
+import com.cookiss.service.FollowService
+import com.cookiss.service.PostService
 import com.cookiss.service.UserService
 import com.cookiss.util.Constants
 import org.koin.dsl.module
@@ -24,7 +28,19 @@ val mainModule = module {
         FollowRepositoryImpl(get())
     }
 
+    single<PostRepository> {
+        PostRepositoryImpl(get())
+    }
+
     single {
         UserService(get())
+    }
+
+    single {
+        FollowService(get())
+    }
+
+    single {
+        PostService(get())
     }
 }

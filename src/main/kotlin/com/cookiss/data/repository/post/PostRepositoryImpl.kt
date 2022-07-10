@@ -18,7 +18,7 @@ class PostRepositoryImpl(
     override suspend fun createPostIfUserExist(post: Post) : Boolean {
         val doesUserExist = users.findOneById(post.userId) != null
 
-        if(doesUserExist){
+        if(!doesUserExist){
             return false
         }
         posts.insertOne(post)
