@@ -12,7 +12,7 @@ interface PostRepository {
     suspend fun getPostByFollows(
         userId: String,
         page: Int = 0,
-        pageSize: Int = Constants.DEFAULT_POST_PAGE_SIZE
+        pageSize: Int = Constants.DEFAULT_PAGE_SIZE
     ): List<Post>
 
     suspend fun getPost(postId: String): Post?

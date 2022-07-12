@@ -22,27 +22,22 @@ fun Route.likeParent(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            ifEmailBelongsToUser(
-                userId = request.userId,
-                validateEmail = userService::doesEmailBelongToUserId
-            ){
-                val likeSuccesful = likeService.likeParent(request.userId, request.parentId)
-                if(likeSuccesful){
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = true
-                        )
+            val likeSuccesful = likeService.likeParent(call.userId, request.parentId)
+            if(likeSuccesful){
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                        successful = true
                     )
-                }else{
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = false,
-                            message = ApiResponseMessages.USER_NOT_FOUND
-                        )
+                )
+            }else{
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                        successful = false,
+                        message = ApiResponseMessages.USER_NOT_FOUND
                     )
-                }
+                )
             }
         }
     }
@@ -58,27 +53,22 @@ fun Route.unlikeParent(
                 call.respond(HttpStatusCode.BadRequest)
                 return@delete
             }
-            ifEmailBelongsToUser(
-                userId = request.userId,
-                validateEmail = userService::doesEmailBelongToUserId
-            ){
-                val unlikeSuccesful = likeService.unlikeParent(request.userId, request.parentId)
-                if(unlikeSuccesful){
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = true
-                        )
+            val unlikeSuccesful = likeService.unlikeParent(call.userId, request.parentId)
+            if(unlikeSuccesful){
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                        successful = true
                     )
-                }else{
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = false,
-                            message = ApiResponseMessages.USER_NOT_FOUND
-                        )
+                )
+            }else{
+                call.respond(
+                    HttpStatusCode.OK,
+                    BasicApiResponse(
+                        successful = false,
+                        message = ApiResponseMessages.USER_NOT_FOUND
                     )
-                }
+                )
             }
         }
     }
