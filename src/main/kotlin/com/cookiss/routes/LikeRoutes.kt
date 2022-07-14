@@ -2,8 +2,9 @@ package com.cookiss.routes
 
 import com.cookiss.data.requests.LikeUpdateRequest
 import com.cookiss.data.responses.BasicApiResponse
+import com.cookiss.data.util.ParentType
+import com.cookiss.service.ActivityService
 import com.cookiss.service.LikeService
-import com.cookiss.service.UserService
 import com.cookiss.util.ApiResponseMessages
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,7 +15,7 @@ import io.ktor.server.routing.*
 
 fun Route.likeParent(
     likeService: LikeService,
-    userService: UserService
+    activityService: ActivityService
 ){
     authenticate {
         post("api/like") {
@@ -22,8 +23,15 @@ fun Route.likeParent(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val likeSuccesful = likeService.likeParent(call.userId, request.parentId)
+            val userId = call.userId
+            val likeSuccesful = likeService.likeParent(userId, request.parentId, request.parentType)
             if(likeSuccesful){
+                activityService.addLikeActivity(
+                    userId,
+                    ParentType.fromType(request.parentType),
+                    request.parentId
+                )
+
                 call.respond(
                     HttpStatusCode.OK,
                     BasicApiResponse(
@@ -44,8 +52,7 @@ fun Route.likeParent(
 }
 
 fun Route.unlikeParent(
-    likeService: LikeService,
-    userService: UserService
+    likeService: LikeService
 ){
     authenticate {
         delete ("api/unlike") {
@@ -53,7 +60,7 @@ fun Route.unlikeParent(
                 call.respond(HttpStatusCode.BadRequest)
                 return@delete
             }
-            val unlikeSuccesful = likeService.unlikeParent(call.userId, request.parentId)
+            val unlikeSuccesful = likeService.unlikeParent(call.userId, request.parentId, request.parentType)
             if(unlikeSuccesful){
                 call.respond(
                     HttpStatusCode.OK,

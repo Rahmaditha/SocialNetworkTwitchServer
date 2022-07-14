@@ -3,6 +3,7 @@ package com.cookiss.routes
 import com.cookiss.data.requests.CreateCommentRequest
 import com.cookiss.data.requests.DeleteCommentRequest
 import com.cookiss.data.responses.BasicApiResponse
+import com.cookiss.service.ActivityService
 import com.cookiss.service.CommentService
 import com.cookiss.service.LikeService
 import com.cookiss.service.UserService
@@ -16,7 +17,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.createComment(
-    commentService: CommentService
+    commentService: CommentService,
+    activityService: ActivityService
 ){
     authenticate {
         post("/api/comment/create") {
@@ -24,7 +26,8 @@ fun Route.createComment(
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            when(commentService.createComment(request, call.userId)){
+            val userId = call.userId
+            when(commentService.createComment(request, userId)){
                 is CommentService.ValidationEvents.ErrorFieldEmpty -> {
                     call.respond(
                         HttpStatusCode.OK,
@@ -44,10 +47,23 @@ fun Route.createComment(
                     )
                 }
                 is CommentService.ValidationEvents.Success -> {
+                    activityService.addCommentActivity(
+                        byUserId = userId,
+                        postId = request.postId,
+                    )
                     call.respond(
                         HttpStatusCode.OK,
                         BasicApiResponse(
                             successful = true
+                        )
+                    )
+                }
+                is CommentService.ValidationEvents.UserNotFound -> {
+                    call.respond(
+                        HttpStatusCode.OK,
+                        BasicApiResponse(
+                            successful = false,
+                            message = ApiResponseMessages.USER_NOT_FOUND
                         )
                     )
                 }
@@ -66,7 +82,7 @@ fun Route.getCommentsForPost(
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-            val comments = commentService.getCommentsForPost(postId)
+            val comments = commentService.getCommentsForPost(postId, call.userId)
             call.respond(HttpStatusCode.OK, comments)
         }
     }

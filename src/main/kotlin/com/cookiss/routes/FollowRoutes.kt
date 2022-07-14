@@ -1,8 +1,11 @@
 package com.cookiss.routes
 
+import com.cookiss.data.models.Activity
 import com.cookiss.data.repository.follow.FollowRepository
 import com.cookiss.data.requests.FollowUpdateRequest
 import com.cookiss.data.responses.BasicApiResponse
+import com.cookiss.data.util.ActivityType
+import com.cookiss.service.ActivityService
 import com.cookiss.service.FollowService
 import com.cookiss.util.ApiResponseMessages
 import io.ktor.http.*
@@ -12,7 +15,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.followUser(followService: FollowService){
+fun Route.followUser(
+    followService: FollowService,
+    activityService: ActivityService
+){
     authenticate {
         post("/api/following/follow"){
             val request = call.receiveOrNull<FollowUpdateRequest>() ?: kotlin.run {
@@ -22,6 +28,15 @@ fun Route.followUser(followService: FollowService){
 
             val didUserExist = followService.followUserIfExist(request, call.userId)
             if(didUserExist) {
+                activityService.createActivity(
+                    Activity(
+                        timestamp = System.currentTimeMillis(),
+                        byUserId = call.userId,
+                        toUserId = request.followedUserId,
+                        type = ActivityType.FollowedUser.type,
+                        parentId = ""
+                    )
+                )
                 call.respond(
                     HttpStatusCode.OK,
                     BasicApiResponse(successful = true)

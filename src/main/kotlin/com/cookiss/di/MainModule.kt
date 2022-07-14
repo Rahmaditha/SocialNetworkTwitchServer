@@ -1,5 +1,7 @@
 package com.cookiss.di
 
+import com.cookiss.data.repository.activity.ActivityRepository
+import com.cookiss.data.repository.activity.ActivityRepositoryImpl
 import com.cookiss.data.repository.comment.CommentRepository
 import com.cookiss.data.repository.comment.CommentRepositoryImpl
 import com.cookiss.data.repository.follow.FollowRepository
@@ -42,6 +44,10 @@ val mainModule = module {
         CommentRepositoryImpl(get())
     }
 
+    single<ActivityRepository> {
+        ActivityRepositoryImpl(get())
+    }
+
     single {
         UserService(get())
     }
@@ -56,6 +62,10 @@ val mainModule = module {
     }
     single {
         CommentService(get(), get())
+    }
+
+    single {
+        ActivityService(get(), get(), get())
     }
 
 }
