@@ -59,7 +59,7 @@ val mainModule = module {
         PostService(get())
     }
     single {
-        LikeService(get())
+        LikeService(get(), get(), get())
     }
     single {
         CommentService(get(), get())

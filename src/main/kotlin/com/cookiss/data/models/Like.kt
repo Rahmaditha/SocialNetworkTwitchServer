@@ -7,7 +7,7 @@ data class Like(
     val userId: String,
     val parentId: String,
     val parentType: Int,
-    val timeStamp: Long,
+    val timestamp: Long,
     @BsonId
     val id : String = ObjectId().toString()
 )
