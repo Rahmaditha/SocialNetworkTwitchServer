@@ -1,6 +1,7 @@
 package com.cookiss.routes
 
 import com.cookiss.data.requests.CreatePostRequest
+import com.cookiss.data.requests.UpdateProfileRequest
 import com.cookiss.data.responses.BasicApiResponse
 import com.cookiss.service.CommentService
 import com.cookiss.service.LikeService
@@ -8,41 +9,75 @@ import com.cookiss.service.PostService
 import com.cookiss.util.ApiResponseMessages
 import com.cookiss.util.Constants
 import com.cookiss.util.QueryParams
+import com.cookiss.util.save
+import com.google.gson.Gson
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
+import java.io.File
+import java.util.*
 
 fun Route.createPostRoute(
     postService: PostService
 ){
+    val gson by inject<Gson>()
     authenticate {
         post("/api/post/create"){
-            val request = call.receiveOrNull<CreatePostRequest>() ?: kotlin.run {
+            val multipart = call.receiveMultipart()
+            var createPostRequest : CreatePostRequest?= null
+            var fileName: String? = null
+            multipart.forEachPart { partData ->
+                when(partData){
+                    is PartData.FormItem -> {
+                        if(partData.name == "post_data"){
+                            createPostRequest = gson.fromJson(
+                                partData.value,
+                                CreatePostRequest::class.java
+                            )
+                        }
+
+                    }
+                    is PartData.FileItem -> {
+                        fileName = partData.save(Constants.POST_PICTURE_PATH)
+                    }
+                    is PartData.BinaryItem -> Unit
+                    is PartData.BinaryChannelItem -> Unit
+                }
+
+            }
+
+            val postPictureUrl = "${Constants.BASE_URL}post_pictures/$fileName"
+
+            createPostRequest?.let { request ->
+                val createPostAcknowledged = postService.createPost(
+                    request = request,
+                    userId   = call.userId,
+                    imageUrl = postPictureUrl
+                )
+
+                if(createPostAcknowledged){
+                    call.respond(HttpStatusCode.OK, BasicApiResponse(
+                        successful = true
+                    ))
+                }else{
+                    File("${Constants.POST_PICTURE_PATH}/$fileName").delete()
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        BasicApiResponse(
+                            successful = false
+                        )
+                    )
+                }
+            } ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val userId = call.userId
-
-            val didUserExist = postService.createPostIfUserExist(request, userId)
-            if(!didUserExist){
-                call.respond(
-                    BasicApiResponse(
-                        successful = false,
-                        message = ApiResponseMessages.USER_NOT_FOUND
-                    )
-                )
-            }else{
-                call.respond(
-                    BasicApiResponse(
-                        successful = true
-                    )
-                )
-            }
-
         }
     }
 }

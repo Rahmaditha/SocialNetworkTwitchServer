@@ -4,6 +4,7 @@ import com.cookiss.di.mainModule
 import com.cookiss.plugins.*
 import io.ktor.server.application.*
 import org.koin.ktor.plugin.Koin
+import java.nio.file.Paths
 
 fun main(args: Array<String>): Unit =
     io.ktor.server.netty.EngineMain.main(args)
@@ -19,4 +20,7 @@ fun Application.module() {
     configureMonitoring()
     configureHTTP()
     configureSecurity()
+
+    println(Paths.get("").toAbsolutePath().toString())
+
 }
