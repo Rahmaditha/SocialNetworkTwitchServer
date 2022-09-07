@@ -1,0 +1,1 @@
+web: ./build/install/ktor-social-network-twitch/bin/ktor-social-network-twitch
